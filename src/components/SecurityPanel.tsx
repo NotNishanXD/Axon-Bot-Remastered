@@ -1,34 +1,93 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShieldAlert, Fingerprint, ShieldBan, MonitorX } from 'lucide-react';
 
+const API_BASE_URL = 'http://localhost:8080/api'; // Update with your bot's IP/URL
+const API_KEY = 'axon_secret_key_123';
+const DEFAULT_GUILD_ID = '1234567890'; // Replace with your actual guild ID
+
 const SecurityPanel: React.FC = () => {
+  const [guildId, setGuildId] = useState(DEFAULT_GUILD_ID);
   const [securityLevels, setSecurityLevels] = useState({
-    antiNuke: true,
+    antiNuke: false,
     antiWebhook: true,
     antiBotAdd: true,
     antiPrune: false
   });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const toggleMode = (key: keyof typeof securityLevels) => {
-    setSecurityLevels(s => ({ ...s, [key]: !s[key] }));
+  useEffect(() => {
+    fetchSettings();
+  }, [guildId]);
+
+  const fetchSettings = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/settings/${guildId}`, {
+        headers: { 'X-API-Key': API_KEY }
+      });
+      const data = await response.json();
+      if (data && !data.error) {
+        setSecurityLevels(s => ({ ...s, antiNuke: !!data.antinuke }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch settings:', error);
+    }
+    setIsLoading(false);
+  };
+
+  const toggleMode = async (key: keyof typeof securityLevels) => {
+    const newValue = !securityLevels[key];
+    setSecurityLevels(s => ({ ...s, [key]: newValue }));
+
+    if (key === 'antiNuke') {
+      try {
+        await fetch(`${API_BASE_URL}/settings/${guildId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': API_KEY
+          },
+          body: JSON.stringify({ antinuke: newValue })
+        });
+      } catch (error) {
+        console.error('Failed to update settings:', error);
+        // Revert on failure
+        setSecurityLevels(s => ({ ...s, [key]: !newValue }));
+      }
+    }
   };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-red-500">Anti-Nuke & Security</h1>
-        <p className="text-dark-400 mt-1">Configure extreme server protection parameters.</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-red-500">Anti-Nuke & Security</h1>
+          <p className="text-dark-400 mt-1">Configure extreme server protection parameters.</p>
+        </div>
+        <div className="flex items-center space-x-2">
+            <span className="text-sm text-dark-400 font-mono">Guild ID:</span>
+            <input 
+              type="text" 
+              value={guildId} 
+              onChange={(e) => setGuildId(e.target.value)}
+              className="bg-dark-800 border border-dark-600 rounded px-2 py-1 text-sm text-white font-mono w-48"
+            />
+        </div>
       </div>
 
       <div className="card p-6 bg-red-900/10 border border-red-500/20">
         <div className="flex items-center space-x-3 mb-6">
           <ShieldAlert className="text-red-500" size={28} />
-          <div>
-            <h3 className="text-xl font-bold text-white">Master Override</h3>
-            <p className="text-sm text-dark-400">If triggered, prevents all destructive actions regardless of roles.</p>
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-white">Master Anti-Nuke</h3>
+            <p className="text-sm text-dark-400">Main toggle for the Anti-Nuke system protection modules.</p>
           </div>
-          <div className="flex-1 text-right">
-             <button className="btn-danger shadow-lg shadow-red-500/20">Quarantine Server Now</button>
+          <div className="flex items-center space-x-4">
+             {isLoading && <span className="text-xs text-red-500 animate-pulse">Syncing...</span>}
+             <button onClick={() => toggleMode('antiNuke')}
+                  className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${securityLevels.antiNuke ? 'bg-red-500' : 'bg-dark-600'}`}>
+                  <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${securityLevels.antiNuke ? 'translate-x-7' : 'translate-x-1'}`} />
+            </button>
           </div>
         </div>
       </div>

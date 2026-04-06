@@ -1,8 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Filter, MessageSquare, Link, Type } from 'lucide-react';
 
+const API_BASE_URL = 'http://localhost:8080/api';
+const API_KEY = 'axon_secret_key_123';
+const DEFAULT_GUILD_ID = '1234567890';
+
 const AutomodPanel: React.FC = () => {
+  const [guildId, setGuildId] = useState(DEFAULT_GUILD_ID);
+  const [isApiLoading, setIsApiLoading] = useState(false);
   const [toggles, setToggles] = useState({
+    automodMaster: false,
     antiSpam: true,
     antiCaps: false,
     antiLink: true,
@@ -11,8 +18,45 @@ const AutomodPanel: React.FC = () => {
     antiEmojiSpam: false
   });
 
-  const toggleHandler = (key: keyof typeof toggles) => {
-    setToggles(prev => ({ ...prev, [key]: !prev[key] }));
+  useEffect(() => {
+    fetchSettings();
+  }, [guildId]);
+
+  const fetchSettings = async () => {
+    setIsApiLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/settings/${guildId}`, {
+        headers: { 'X-API-Key': API_KEY }
+      });
+      const data = await response.json();
+      if (data && !data.error) {
+        setToggles(prev => ({ ...prev, automodMaster: !!data.automod }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch automod settings:', error);
+    }
+    setIsApiLoading(false);
+  };
+
+  const toggleHandler = async (key: keyof typeof toggles) => {
+    const newValue = !toggles[key];
+    setToggles(prev => ({ ...prev, [key]: newValue }));
+
+    if (key === 'automodMaster') {
+      try {
+        await fetch(`${API_BASE_URL}/settings/${guildId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': API_KEY
+          },
+          body: JSON.stringify({ automod: newValue })
+        });
+      } catch (error) {
+        console.error('Failed to update automod setting:', error);
+        setToggles(prev => ({ ...prev, [key]: !newValue }));
+      }
+    }
   };
 
   const rules = [
@@ -26,9 +70,39 @@ const AutomodPanel: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-white">Auto Mod Configuration</h1>
-        <p className="text-dark-400 mt-1">Fine-tune automated filtering and rules.</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Auto Mod Configuration</h1>
+          <p className="text-dark-400 mt-1">Fine-tune automated filtering and rules.</p>
+        </div>
+        <div className="flex items-center space-x-2">
+            <span className="text-sm text-dark-400 font-mono">Guild ID:</span>
+            <input 
+              type="text" 
+              value={guildId} 
+              onChange={(e) => setGuildId(e.target.value)}
+              className="bg-dark-800 border border-dark-600 rounded px-2 py-1 text-sm text-white font-mono w-48"
+            />
+        </div>
+      </div>
+
+      <div className="card p-6 bg-primary-900/10 border border-primary-500/20 mb-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Filter className="text-primary-500" size={32} />
+            <div>
+              <h3 className="text-xl font-bold text-white">Master Automod Toggle</h3>
+              <p className="text-sm text-dark-400">Enable or disable all automated moderation filters at once.</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+             {isApiLoading && <span className="text-xs text-primary-500 animate-pulse">Syncing...</span>}
+             <button onClick={() => toggleHandler('automodMaster')}
+                  className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${toggles.automodMaster ? 'bg-primary-500' : 'bg-dark-600'}`}>
+                  <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${toggles.automodMaster ? 'translate-x-7' : 'translate-x-1'}`} />
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

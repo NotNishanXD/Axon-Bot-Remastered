@@ -1,0 +1,44 @@
+--- Schema for db/anti.db ---
+Table: antinuke
+  Column: guild_id (INTEGER)
+  Column: status (BOOLEAN)
+Table: extraowners
+  Column: guild_id (INTEGER)
+  Column: owner_id (INTEGER)
+Table: Nightmode
+  Column: guildId (TEXT)
+  Column: roleId (TEXT)
+  Column: adminPermissions (INTEGER)
+Table: whitelisted_users
+  Column: guild_id (INTEGER)
+  Column: user_id (INTEGER)
+  Column: ban (BOOLEAN)
+  Column: kick (BOOLEAN)
+  Column: prune (BOOLEAN)
+  Column: botadd (BOOLEAN)
+  Column: serverup (BOOLEAN)
+  Column: memup (BOOLEAN)
+  Column: chcr (BOOLEAN)
+  Column: chdl (BOOLEAN)
+  Column: chup (BOOLEAN)
+  Column: rlcr (BOOLEAN)
+  Column: rlup (BOOLEAN)
+  Column: rldl (BOOLEAN)
+  Column: meneve (BOOLEAN)
+  Column: mngweb (BOOLEAN)
+  Column: mngstemo (BOOLEAN)
+--- Schema for db/automod.db ---
+Table: automod
+  Column: guild_id (INTEGER)
+  Column: enabled (INTEGER)
+Table: automod_punishments
+  Column: guild_id (INTEGER)
+  Column: event (TEXT)
+  Column: punishment (TEXT)
+Table: automod_ignored
+  Column: guild_id (INTEGER)
+  Column: type (TEXT)
+  Column: id (INTEGER)
+Table: automod_logging
+  Column: guild_id (INTEGER)
+  Column: log_channel (INTEGER)
