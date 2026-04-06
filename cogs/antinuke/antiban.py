@@ -68,6 +68,13 @@ class AntiBan(commands.Cog):
                 return
 
             await self.ban_executor(guild, executor, user)
+            
+            embed = discord.Embed(title="Axon Security | Member Banned", color=0x000000)
+            embed.add_field(name="Action by", value=f"{executor} ({executor.id})", inline=False)
+            embed.add_field(name="Targeted Member", value=f"{user} ({user.id})", inline=False)
+            embed.add_field(name="Result", value="Executor Banned, Member Unbanned", inline=False)
+            embed.set_footer(text="Antinuke | Powered by Axon")
+            await self.bot.send_security_log(guild, embed)
 
     async def ban_executor(self, guild, executor, user, retries=3):
         while retries > 0:

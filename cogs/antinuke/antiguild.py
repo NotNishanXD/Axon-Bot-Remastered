@@ -157,6 +157,8 @@ class AntiGuildUpdate(commands.Cog):
                     await after.edit(splash=before.splash)
                 if before.banner != after.banner:
                     await after.edit(banner=before.banner)
+                if before.vanity_url_code != after.vanity_url_code:
+                    await after.edit(vanity_code=before.vanity_url_code)
                 return
             except discord.Forbidden:
                 return

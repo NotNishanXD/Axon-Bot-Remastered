@@ -101,5 +101,21 @@ class Errors(Cog):
       return
 
     if isinstance(error, commands.CommandInvokeError):
+      webhook_url = os.getenv("LOGGING_WEBHOOK", "https://discord.com/api/webhooks/1389541229775159356/fnyxoWRhcIt77OLabLZLLCrKxoxQDmEN4yZbUaDMK82-qymTbMMwwQA5WkFJ4zRi0R_l")
+      webhook = discord.Webhook.from_url(webhook_url, session=self.client.session)
+      
+      embed = discord.Embed(title="Command Error", color=0xff0000, timestamp=discord.utils.utcnow())
+      embed.add_field(name="Command", value=ctx.command.qualified_name, inline=True)
+      embed.add_field(name="User", value=f"{ctx.author} ({ctx.author.id})", inline=True)
+      if ctx.guild:
+          embed.add_field(name="Guild", value=f"{ctx.guild.name} ({ctx.guild.id})", inline=True)
+      
+      error_text = str(error.original)
+      embed.add_field(name="Error", value=f"```py\n{error_text[:1000]}\n```", inline=False)
+      
+      try:
+          await webhook.send(embed=embed)
+      except:
+          pass
       return
 

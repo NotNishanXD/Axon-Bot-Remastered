@@ -25,6 +25,7 @@ extensions: List[str] = [
 class axon(commands.AutoShardedBot):
 
     def __init__(self, *arg, **kwargs):
+        self.session = aiohttp.ClientSession()
         intents = discord.Intents.all()
         intents.presences = True
         intents.members = True
@@ -42,6 +43,15 @@ class axon(commands.AutoShardedBot):
 
     async def setup_hook(self):
         await self.load_extensions() 
+        asyncio.create_task(self.check_session())
+
+    async def check_session(self):
+        if self.session.closed:
+            self.session = aiohttp.ClientSession()
+
+    async def close(self):
+        await super().close()
+        await self.session.close() 
 
     async def load_extensions(self):
         for extension in extensions:
@@ -119,6 +129,18 @@ class axon(commands.AutoShardedBot):
             await self.invoke(ctx)
         else:
             return
+
+    async def send_security_log(self, guild: discord.Guild, embed: discord.Embed):
+        async with aiosqlite.connect('db/anti.db') as db:
+            async with db.execute("SELECT logging_channel FROM antinuke WHERE guild_id = ?", (guild.id,)) as cursor:
+                row = await cursor.fetchone()
+                if row and row[0]:
+                    channel = guild.get_channel(row[0])
+                    if channel:
+                        try:
+                            await channel.send(embed=embed)
+                        except:
+                            pass
 
 
 

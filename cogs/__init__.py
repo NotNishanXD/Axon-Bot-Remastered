@@ -70,6 +70,7 @@ from .events.greet2 import greet
 from .events.mention import Mention
 from .events.react import React
 from .events.autoreact import AutoReactListener
+from .events.dashboard_api import DashboardAPI
 #from .events.topgg import TopGG
 
 ########-------HELP-------########
@@ -112,6 +113,7 @@ from .antinuke.antirlup import AntiRoleUpdate
 from .antinuke.antiwebhook import AntiWebhookUpdate
 from .antinuke.antiwebhookcr import AntiWebhookCreate
 from .antinuke.antiwebhookdl import AntiWebhookDelete
+from .antinuke.antialt import AntiAlt
 
 #Extra Optional Events 
 
@@ -247,6 +249,7 @@ async def setup(bot: axon):
   await bot.add_cog(Mention(bot))
   await bot.add_cog(AutoRole(bot))
   await bot.add_cog(React(bot))
+  await bot.add_cog(DashboardAPI(bot))
   await bot.add_cog(AutoReaction(bot))
   await bot.add_cog(AutoReactListener(bot))
   await bot.add_cog(NotifCommands(bot))
@@ -269,6 +272,7 @@ async def setup(bot: axon):
   await bot.add_cog(AntiWebhookUpdate(bot))
   await bot.add_cog(AntiWebhookCreate(bot))
   await bot.add_cog(AntiWebhookDelete(bot))
+  await bot.add_cog(AntiAlt(bot))
 
 
 #Extra Optional Events 

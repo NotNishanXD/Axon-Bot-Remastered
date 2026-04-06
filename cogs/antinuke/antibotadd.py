@@ -80,6 +80,13 @@ class AntiBotAdd(commands.Cog):
                 return
 
             await self.take_action_and_kick_bot(guild, executor, member, "Unwhitelisted user added a bot")
+            
+            embed = discord.Embed(title="Axon Security | Bot Addition", color=0x000000)
+            embed.add_field(name="Action by", value=f"{executor} ({executor.id})", inline=False)
+            embed.add_field(name="Bot Added", value=f"{member} ({member.id})", inline=False)
+            embed.add_field(name="Result", value="Executor Banned, Bot Kicked", inline=False)
+            embed.set_footer(text="Antinuke | Powered by Axon")
+            await self.bot.send_security_log(guild, embed)
 
     async def take_action_and_kick_bot(self, guild, executor, bot_member, reason, retries=3):
         while retries > 0:

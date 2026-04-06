@@ -6,6 +6,10 @@ import Analytics from './components/Analytics';
 import Management from './components/Management';
 import Logs from './components/Logs';
 import Settings from './components/Settings';
+import ModerationPanel from './components/ModerationPanel';
+import AutomodPanel from './components/AutomodPanel';
+import GamesPanel from './components/GamesPanel';
+import SecurityPanel from './components/SecurityPanel';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -21,6 +25,14 @@ function App() {
         return <Management />;
       case 'logs':
         return <Logs />;
+      case 'moderation':
+        return <ModerationPanel />;
+      case 'automod':
+        return <AutomodPanel />;
+      case 'games':
+        return <GamesPanel />;
+      case 'security':
+        return <SecurityPanel />;
       case 'settings':
         return <Settings />;
       default:

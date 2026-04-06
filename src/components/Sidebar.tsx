@@ -6,7 +6,11 @@ import {
   FileText, 
   Shield,
   Menu,
-  X
+  X,
+  Gavel,
+  Filter,
+  Gamepad2,
+  Lock
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -22,6 +26,10 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpen, setI
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { id: 'analytics', label: 'Analytics', icon: Activity },
     { id: 'management', label: 'Management', icon: Shield },
+    { id: 'moderation', label: 'Moderation', icon: Gavel },
+    { id: 'automod', label: 'Auto Moderation', icon: Filter },
+    { id: 'games', label: 'Games', icon: Gamepad2 },
+    { id: 'security', label: 'Anti-Nuke', icon: Lock },
     { id: 'logs', label: 'Logs', icon: FileText },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];

@@ -15,25 +15,13 @@ class Antinuke(commands.Cog):
     await self.db.execute('''
         CREATE TABLE IF NOT EXISTS antinuke (
             guild_id INTEGER PRIMARY KEY,
-            status BOOLEAN
+            status BOOLEAN,
+            logging_channel INTEGER DEFAULT NULL
         )
     ''')
     await self.db.commit()
 
-    
-  async def enable_limit_settings(self, guild_id):
-    default_limits = DEFAULT_LIMITS
-    for action, limit in default_limits.items():
-      await self.db.execute('INSERT OR REPLACE INTO limit_settings (guild_id, action_type, action_limit, time_window) VALUES (?, ?, ?, ?)', (guild_id, action, limit, TIME_WINDOW))
-      await self.db.commit()
-
-  async def disable_limit_settings(self, guild_id):
-    await self.db.execute('DELETE FROM limit_settings WHERE guild_id = ?', (guild_id,))
-    await self.db.commit()
-
-
   @commands.hybrid_command(name='antinuke', aliases=['antiwizz', 'anti'], help="Enables/Disables Anti-Nuke Module in the server")
-  
   @blacklist_check()
   @ignore_check()
   @commands.cooldown(1, 4, commands.BucketType.user)
@@ -71,6 +59,8 @@ class Antinuke(commands.Cog):
       )
       embed.add_field(name='__**Antinuke Enable**__', value=f'To Enable Antinuke, Use - `{pre}antinuke enable`')
       embed.add_field(name='__**Antinuke Disable**__', value=f'To Disable Antinuke, Use - `{pre}antinuke disable`')
+      embed.add_field(name='__**Security Logs**__', value=f'To Set Logs, Use - `{pre}securitylogs <channel>`')
+      embed.add_field(name='__**Lockdown**__', value=f'To Panic Lockdown, Use - `{pre}lockdown`')
       
 
       embed.set_thumbnail(url=self.bot.user.avatar.url)
@@ -193,6 +183,67 @@ class Antinuke(commands.Cog):
         color=0x000000
       )
       await ctx.send(embed=embed)
+
+  @commands.hybrid_command(name='securitylogs', aliases=['antinukelogs', 'securitylog'], help="Sets the logging channel for Antinuke actions.")
+  @blacklist_check()
+  @ignore_check()
+  @commands.has_permissions(administrator=True)
+  @commands.guild_only()
+  async def securitylogs(self, ctx, channel: discord.TextChannel = None):
+    is_owner = ctx.author.id == ctx.guild.owner_id
+    async with self.db.execute("SELECT owner_id FROM extraowners WHERE guild_id = ? AND owner_id = ?", (ctx.guild.id, ctx.author.id)) as cursor:
+        check = await cursor.fetchone()
+    
+    if not is_owner and not check:
+        return await ctx.send(embed=discord.Embed(description="Only Server Owner or Extra Owner can run this command!", color=0xff0000))
+
+    if not channel:
+        return await ctx.send(embed=discord.Embed(description=f"Usage: `{ctx.prefix}securitylogs <channel>`", color=0x000000))
+
+    await self.db.execute("UPDATE antinuke SET logging_channel = ? WHERE guild_id = ?", (channel.id, ctx.guild.id))
+    await self.db.commit()
+    
+    await ctx.send(embed=discord.Embed(description=f"Successfully set Antinuke security logs to {channel.mention}", color=0x000000))
+
+  @commands.hybrid_command(name='lockdown', help="Strips all dangerous permissions from everyone except owners/whitelisted.")
+  @blacklist_check()
+  @ignore_check()
+  @commands.has_permissions(administrator=True)
+  @commands.guild_only()
+  async def lockdown(self, ctx):
+    is_owner = ctx.author.id == ctx.guild.owner_id
+    async with self.db.execute("SELECT owner_id FROM extraowners WHERE guild_id = ? AND owner_id = ?", (ctx.guild.id, ctx.author.id)) as cursor:
+        check = await cursor.fetchone()
+    
+    if not is_owner and not check:
+        return await ctx.send(embed=discord.Embed(description="Only Server Owner or Extra Owner can run this command!", color=0xff0000))
+
+    msg = await ctx.send(embed=discord.Embed(description="Scanning for members with dangerous permissions and initiating lockdown...", color=0x000000))
+    
+    dangerous_perms = ['administrator', 'manage_guild', 'manage_channels', 'manage_roles', 'ban_members', 'kick_members', 'manage_webhooks']
+    count = 0
+    
+    for member in ctx.guild.members:
+        if member.id == ctx.guild.owner_id or member.id == self.bot.user.id or member.bot:
+            continue
+            
+        async with self.db.execute("SELECT user_id FROM whitelisted_users WHERE guild_id = ? AND user_id = ?", (ctx.guild.id, member.id)) as cursor:
+            is_wl = await cursor.fetchone()
+        if is_wl:
+            continue
+            
+        has_dangerous = any(getattr(member.guild_permissions, perm) for perm in dangerous_perms)
+        if has_dangerous:
+            try:
+                # Remove all roles that have dangerous permissions
+                roles_to_remove = [role for role in member.roles if any(getattr(role.permissions, perm) for perm in dangerous_perms)]
+                if roles_to_remove:
+                    await member.remove_roles(*roles_to_remove, reason="Emergency Lockdown Initiated")
+                    count += 1
+            except:
+                pass
+                
+    await msg.edit(embed=discord.Embed(description=f"Lockdown complete. Stripped roles from {count} members with dangerous permissions.", color=0x000000))
 
 
   @commands.Cog.listener()
