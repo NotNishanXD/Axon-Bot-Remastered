@@ -36,6 +36,7 @@ from .commands.ticket import TicketSystem
 from .commands.logging import Logging
 from .commands.translate import TranslateCog
 from .commands.jail import Jail
+from .commands.economy import Economy
 
 from .commands.antinuke import Antinuke
 from .commands.extraown import Extraowner
@@ -161,7 +162,7 @@ async def setup(bot: axon):
         AntiChannelCreate, AntiChannelDelete, AntiChannelUpdate, AntiEveryone, AntiGuildUpdate,
         AntiIntegration, AntiKick, AntiPrune, AntiRoleCreate, AntiRoleDelete,
         AntiRoleUpdate, AntiWebhookUpdate, AntiWebhookCreate, 
-        AntiWebhookDelete, AntiSpam, AntiCaps, AntiLink, AntiInvite, AntiMassMention, Music, Stats, Emergency, Status, NoPrefix, FilterCog, AutoReaction, AutoReactListener, Ban, Unban, Mute, Unmute, Lock, Unlock, Hide, Unhide, Kick, Warn, Role, Message, Moderation, TopCheck, Snipe, Global, QR, VanityRoles, ReactionRoles, Messages, TranslateCog, FastGreet, Jail, #InviteTracker,
+        AntiWebhookDelete, AntiSpam, AntiCaps, AntiLink, AntiInvite, AntiMassMention, Music, Stats, Emergency, Status, NoPrefix, FilterCog, AutoReaction, AutoReactListener, Ban, Unban, Mute, Unmute, Lock, Unlock, Hide, Unhide, Kick, Warn, Role, Message, Moderation, TopCheck, Snipe, Global, QR, VanityRoles, ReactionRoles, Messages, TranslateCog, FastGreet, Jail, Economy, #InviteTracker,
     ]
 
 
@@ -214,6 +215,7 @@ async def setup(bot: axon):
   await bot.add_cog(TranslateCog(bot))
   await bot.add_cog(FastGreet(bot))
   await bot.add_cog(Jail(bot))
+  await bot.add_cog(Economy(bot))
 
 
   await bot.add_cog(_antinuke(bot))

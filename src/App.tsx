@@ -10,6 +10,7 @@ import ModerationPanel from './components/ModerationPanel';
 import AutomodPanel from './components/AutomodPanel';
 import GamesPanel from './components/GamesPanel';
 import SecurityPanel from './components/SecurityPanel';
+import EconomyPanel from './components/EconomyPanel';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -33,6 +34,8 @@ function App() {
         return <GamesPanel />;
       case 'security':
         return <SecurityPanel />;
+      case 'economy':
+        return <EconomyPanel />;
       case 'settings':
         return <Settings />;
       default:

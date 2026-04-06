@@ -220,6 +220,58 @@ def update_settings(guild_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/economy/balance/<int:guild_id>/<int:user_id>', methods=['GET'])
+def get_economy_balance(guild_id, user_id):
+    if not verify_api_key():
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    try:
+        conn = sqlite3.connect('db/economy.db')
+        cur = conn.cursor()
+        cur.execute("SELECT wallet, bank FROM balances WHERE user_id = ?", (user_id,))
+        row = cur.fetchone()
+        conn.close()
+        
+        if row:
+            return jsonify({
+                "wallet": row[0],
+                "bank": row[1],
+                "total": row[0] + row[1]
+            })
+        else:
+            return jsonify({
+                "wallet": 0,
+                "bank": 0,
+                "total": 0
+            })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/economy/leaderboard/<int:guild_id>', methods=['GET'])
+def get_economy_leaderboard(guild_id):
+    if not verify_api_key():
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    try:
+        conn = sqlite3.connect('db/economy.db')
+        cur = conn.cursor()
+        cur.execute("SELECT user_id, (wallet + bank) as total FROM balances ORDER BY total DESC LIMIT 10")
+        rows = cur.fetchall()
+        conn.close()
+        
+        leaderboard = []
+        for row in rows:
+            # Note: We can't easily get the username from Flask without more complex bot interaction,
+            # but we can return IDs and let the frontend/another endpoint handle it.
+            leaderboard.append({
+                "user_id": row[0],
+                "total": row[1]
+            })
+            
+        return jsonify(leaderboard)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 def run():
     app.run(host='0.0.0.0', port=os.getenv("PORT", 8080))
 

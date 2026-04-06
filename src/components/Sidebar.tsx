@@ -10,7 +10,8 @@ import {
   Gavel,
   Filter,
   Gamepad2,
-  Lock
+  Lock,
+  Coins
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -30,6 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpen, setI
     { id: 'automod', label: 'Auto Moderation', icon: Filter },
     { id: 'games', label: 'Games', icon: Gamepad2 },
     { id: 'security', label: 'Anti-Nuke', icon: Lock },
+    { id: 'economy', label: 'Economy', icon: Coins },
     { id: 'logs', label: 'Logs', icon: FileText },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
